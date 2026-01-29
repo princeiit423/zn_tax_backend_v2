@@ -22,31 +22,30 @@ app.use('/api/auth', authRoutes)
 app.use('/api/files', fileRoutes)
 app.use('/api/admin',adminRoutes)
 
-// In first run create admin user and password
-async function createAdmin() {
-  const exists = await User.findOne({ email: process.env.ADMIN_EMAIL })
-  if (exists) {
-    console.log('Admin already exists')
-    process.exit()
-  }
-
-  const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10)
-
-  await User.create({
-    name: 'Admin',
-    email: process.env.ADMIN_EMAIL,
-    password: hashed
-  })
-
-  console.log('Admin created')
-  process.exit()
-}
-
-createAdmin()
-
 
 app.get('/', (req, res) => {
   res.send('ZN Tax Backend Running')
+})
+
+// this code is created later after testing if creates problem remove route
+app.get('/create-admin',async(req,res)=>{
+  async function createAdmin() {
+    const exists = await User.findOne({ email: process.env.ADMIN_EMAIL })
+    if (exists) {
+      console.log('Admin already exists')
+      process.exit()
+    }
+  
+    const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10)
+  
+    await User.create({
+      name: 'Admin',
+      email: process.env.ADMIN_EMAIL,
+      password: hashed
+    })
+  }
+  createAdmin();
+  res.send("admin-created successfully");
 })
 
 app.listen(process.env.PORT, () => {
