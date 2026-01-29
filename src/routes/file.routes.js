@@ -11,22 +11,27 @@ const upload = multer({ dest: 'tmp/' })
 router.post('/upload', auth, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
+       console.log("File info:", req.file);
       return res.status(400).json({ message: 'No file uploaded' })
+      
     }
+    const originalName = decodeURIComponent(req.file.originalname);
+    //const originalName = req.file.originalname
+    const extension = originalName.split('.').pop() // pdf
 
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'zn_tax_documents',
       resource_type: 'raw',
-  flags: 'attachment'
+      public_id: `${originalName.split('.').slice(0, -1).join('.')}.${extension}` // add .pdf
     })
 
     fs.unlinkSync(req.file.path)
 
     const file = await File.create({
-      fileName: req.file.originalname,
-      fileType:req.body.fileType,
-      fileUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+      fileName: originalName,
+      fileType: req.body.fileType,
+      fileUrl: result.secure_url,        // this will now include .pdf
+      cloudinaryId: result.public_id,    // will include .pdf
       financialYear: req.body.financialYear,
       user: req.body.userId
     })
